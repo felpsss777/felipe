@@ -1,20 +1,40 @@
-name: Jekyll site CI
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: 'master'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
-
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Build do projeto
+        run: npm run build
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload do artefato
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: github-pages
+          path: ./build 
+          
+      - name: Deploy para GitHub Pages
+        uses: actions/deploy-pages@v4
